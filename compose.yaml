@@ -1,0 +1,6 @@
+services:
+  image-reencoder:
+    build: 
+    volumes:
+      - videos:source-videos
+      - reencoded-videos:output-videos
