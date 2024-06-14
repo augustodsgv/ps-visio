@@ -27,14 +27,13 @@ RUN apt-get update -qq && apt-get -y install \
     yasm \
     zlib1g-dev
 
-RUN mkdir -p /opt/ffmpeg/ffmpeg_sources /opt/bin
+RUN mkdir -p /opt/ffmpeg/ffmpeg_sources /opt/ffmpeg/bin
 
 WORKDIR /opt/ffmpeg
 
 # Baixando / compilando libs necessárias
 ## NASM (usado para algumas libs)
 RUN apt-get install nasm -y
-
 ## VP8
 RUN apt-get install libvpx-dev -y
 ## VP9
@@ -46,8 +45,6 @@ RUN mkdir -p aom_build
 WORKDIR /opt/ffmpeg/ffmpeg_sources/aom_build
 RUN PATH="/opt/ffmpeg/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg/ffmpeg_build" -DENABLE_TESTS=OFF -DENABLE_NASM=on ../aom
 RUN PATH="/opt/ffmpeg/bin:$PATH" make && make install
-
-
 
 # Compilando
 WORKDIR /opt/ffmpeg/ffmpeg_sources
@@ -63,21 +60,23 @@ RUN PATH="/opt/ffmpeg/bin:$PATH" PKG_CONFIG_PATH="/opt/ffmpeg/ffmpeg_build/lib/p
   --extra-libs="-lpthread -lm" \
   --ld="g++" \
   --bindir="/opt/ffmpeg/bin" \
-  #--enable-gnutls \
-  #--enable-libass \
-  #--enable-libfreetype \
-  #--enable-libmp3lame \
-  #--enable-libvorbis \
   --enable-libopus \
   --enable-libvpx \
   --enable-libaom
 
 RUN PATH="/opt/ffmpeg/bin:$PATH" make && make install && hash -r
 
-FROM ubuntu:jammy
+# python resources
+RUN apt install python3 python3-pip -y
+RUN apt install python3-venv -y
 
-WORKDIR /opt/ffmpeg
-COPY --from=build /opt/ffmpeg .
-
-ENV PATH="/opt/ffmpeg/bin:$PATH"
 WORKDIR /home
+RUN python3 -m venv env
+COPY ./requirements.txt .
+SHELL ["/bin/bash", "-c"]
+RUN source ./env/bin/activate
+RUN pip3 install -r requirements.txt
+ENV PATH=/opt/ffmpeg/bin:$PATH
+COPY ./src ./src
+
+CMD python3 -m src.main

@@ -5,10 +5,17 @@ class Video_reencoder:
     def __init__(self):
         self.reencode_formats = ('VP8', 'VP9', 'AV1')
 
-    def reencode(self, file_name : str, dest_encode : str):
-        if not pathlib.Path(file_name).is_file():
-            raise Exception(f'File {file_name} does not exists')
-        
-        if dest_encode not in self.reencode_formats:
-            raise Exception(f'Invalide reencode format {dest_encode}\n Available formats: {self.reencode_formats}')
-        subprocess.run(['ls', '-l'])
+    def vp8_reencode(self, input_file : str, output_file : str = None):
+        if output_file == None:
+            output_file = input_file.split('.mp4')[0] + '.webm'
+        subprocess.run(["ffmpeg", "-i", input_file, "-c:v", "libvpx", "-b:v", "1M", "-c:a", "libvorbis", output_file])
+
+    def vp9_reencode(self, input_file : str, output_file : str = None):
+        if output_file == None:
+            output_file = input_file.split('.mp4')[0] + '.webm'
+        subprocess.run(["ffmpeg", "-i", input_file, "-c:v", "libvpx-vp9", "-b:v", "2M", output_file])
+
+    def av1_reencode(self, input_file : str, output_file : str = None):
+        if output_file == None:
+            output_file = input_file.split('.mp4')[0] + '.mkv'
+        subprocess.run(["ffmpeg", "-i", input_file, "-c:v", "libaom-av1", "-crf", "30", output_file])
