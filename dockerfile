@@ -79,4 +79,4 @@ RUN pip3 install -r requirements.txt
 ENV PATH=/opt/ffmpeg/bin:$PATH
 COPY ./src ./src
 
-CMD python3 -m src.main
+CMD python3 -m output_videos/h264_vp9_changing_bitrate/h264_vp9_bitrate_2M.mp4 output_videos/h264_vp9_changing_bitrate/h264_vp9_bitrate_1M.mp4
