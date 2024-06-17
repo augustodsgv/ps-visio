@@ -43,8 +43,12 @@ class PSNR_validator(Validator):
                     break
 
             average = (linha.split('average:')[-1]).split(' ')[0]  # Splitting the average output
+            Y = (linha.split('Y:')[-1]).split(' ')[0]  # Splitting the Y plane
+            U = (linha.split('U:')[-1]).split(' ')[0]  # Splitting the U plane
+            V = (linha.split('V:')[-1]).split(' ')[0]  # Splitting the V plane
+
             
-            return float(average)
+            return float(average), float(Y), float(U), float(V) 
         
 
 
@@ -55,5 +59,5 @@ if __name__ == '__main__':
     reencoded_file = sys.argv[2]
 
     validator = PSNR_validator()
-    average_score = validator.compare(source_file, reencoded_file)
-    print(f'Average PSNR score: {average_score}')
+    average_score, Y_score, U_score, V_score = validator.compare(source_file, reencoded_file)
+    print(f'Average PSNR score: {average_score}, Y score: {Y_score}, U score: {U_score}, V score: {V_score},')

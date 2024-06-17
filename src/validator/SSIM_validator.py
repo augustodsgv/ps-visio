@@ -3,7 +3,7 @@ import subprocess
 import sys
 
 
-class SSMI_validator(Validator):
+class SSIM_validator(Validator):
     def __init__(self):
         pass
 
@@ -36,13 +36,13 @@ class SSMI_validator(Validator):
                     linha = raw_line
                     break
 
-            Y = (linha.split('Y:')[-1]).split(' ')[0]  # Splitting the Y plane
-            U = (linha.split('U:')[-1]).split(' ')[0]  # Splitting the Y plane
-            V = (linha.split('V:')[-1]).split(' ')[0]  # Splitting the Y plane
+            Y = float((linha.split('Y:')[-1]).split(' ')[0])  # Splitting the Y plane
+            U = float((linha.split('U:')[-1]).split(' ')[0])  # Splitting the U plane
+            V = float((linha.split('V:')[-1]).split(' ')[0])  # Splitting the V plane
+            average = (Y + U + V) / 3
 
-
-            
-            return float(Y), float(U), float(V)
+            return average, Y, U, V
+        
         
 
 
