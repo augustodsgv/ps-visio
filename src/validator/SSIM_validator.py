@@ -7,7 +7,7 @@ class SSIM_validator(Validator):
     def __init__(self):
         pass
 
-    def compare(self, original_video : str, reencoded_video : str) -> float:
+    def compare(self, original_video : str, reencoded_video : str) -> list[float, float, float, float]:
         pipes = subprocess.Popen(           # Running CLI for PSNR in ffmpeg
             [
                 "ffmpeg",
@@ -35,7 +35,6 @@ class SSIM_validator(Validator):
                 if 'SSIM' in raw_line:                  # Search the one which has the PSNR output
                     linha = raw_line
                     break
-
             Y = float((linha.split('Y:')[-1]).split(' ')[0])  # Splitting the Y plane
             U = float((linha.split('U:')[-1]).split(' ')[0])  # Splitting the U plane
             V = float((linha.split('V:')[-1]).split(' ')[0])  # Splitting the V plane

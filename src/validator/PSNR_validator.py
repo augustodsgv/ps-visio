@@ -7,7 +7,7 @@ class PSNR_validator(Validator):
     def __init__(self):
         pass
 
-    def compare(self, original_video : str, reencoded_video : str) -> float:
+    def compare(self, original_video : str, reencoded_video : str) -> list[float, float, float, float]:
         pipes = subprocess.Popen(           # Running CLI for PSNR in ffmpeg
             [
                 "ffmpeg",
@@ -34,7 +34,6 @@ class PSNR_validator(Validator):
             [out#0/null @ 0x56238d949040] video:774KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown frame= 1801 fps=116 q=-0.0 Lsize=N/A time=00:02:00.00 bitrate=N/A speed= 7.7x  
             '''
             # Ou PSNR information is at the penultimate line, at 'average:46.086048'.
-            
             splitted_lines = output.split('\n')         # Splitting lines
             linha : str = ''
             for raw_line in reversed(splitted_lines):           # Search in every line, from bottom up (information appears at the end)
@@ -43,9 +42,9 @@ class PSNR_validator(Validator):
                     break
 
             average = (linha.split('average:')[-1]).split(' ')[0]  # Splitting the average output
-            Y = (linha.split('Y:')[-1]).split(' ')[0]  # Splitting the Y plane
-            U = (linha.split('U:')[-1]).split(' ')[0]  # Splitting the U plane
-            V = (linha.split('V:')[-1]).split(' ')[0]  # Splitting the V plane
+            Y = (linha.split('y:')[-1]).split(' ')[0]  # Splitting the Y plane
+            U = (linha.split('u:')[-1]).split(' ')[0]  # Splitting the U plane
+            V = (linha.split('v:')[-1]).split(' ')[0]  # Splitting the V plane
 
             
             return float(average), float(Y), float(U), float(V) 

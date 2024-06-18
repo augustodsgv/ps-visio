@@ -60,7 +60,8 @@ class Video_reencoder(ABC):
     
     def reencode(self, input_file : str, output_file : str = None):
         ffmpeg_call = self._set_reencode_call(input_file, output_file)
-        print(f'ffmpeg call: {ffmpeg_call}')
+        if not self.quiet:
+            print(f'ffmpeg call: {ffmpeg_call}')
         subprocess.run(ffmpeg_call)
 
     @abstractmethod

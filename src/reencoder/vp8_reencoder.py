@@ -29,11 +29,18 @@ class Vp8_reencoder(Video_reencoder):
     def _speed(self):
         # Speed accepts very delimited inputs
         if self.speed != None:
+            # speed_modes = {
+            #     'realtime' : 'rt',
+            #     'balanced' : 'good',
+            #     'quality' : 'best'
+            #     }
+
             speed_modes = {
-                'realtime' : 'rt',
+                'realtime' : 'realtime',
                 'balanced' : 'good',
                 'quality' : 'best'
-                }
+            }
+
             return speed_modes[self.speed]
         else:
             return None
@@ -59,7 +66,8 @@ class Vp8_reencoder(Video_reencoder):
         
         # speed options: --best, --good, --rt
         if self.speed != None:
-            ffmpeg_call.extend([f"--{self._speed}"])
+            # ffmpeg_call.extend([f"--{self._speed}"])
+            ffmpeg_call.extend(["-deadline", self._speed])
         
         if self.n_threads != None:
             ffmpeg_call.extend(["-threads", self.n_threads])

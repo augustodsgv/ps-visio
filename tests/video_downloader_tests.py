@@ -1,2 +1,2 @@
-import src.video_downloader
+import src.utils.video_downloader
 
