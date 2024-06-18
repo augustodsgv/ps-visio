@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import subprocess
+import time
 
 class Video_reencoder(ABC):
     def __init__(
@@ -10,7 +11,8 @@ class Video_reencoder(ABC):
         speed : str = None,             # realtime, balanced or quality
         n_threads : int = None,
         t_duration : int = None,
-        quiet : bool = False
+        quiet : bool = False,
+        time_out : int = None
         ):
 
         if crf_range != None:
@@ -32,10 +34,9 @@ class Video_reencoder(ABC):
         self.bit_rate = bit_rate if bit_rate != None else None
         self.variable_bitrate = variable_bitrate
 
-        
-
         self.n_threads = str(n_threads) if n_threads != None else None
         self.t_duration = str(t_duration) if t_duration != None else None
+        self.timeout = time_out
 
         self.quiet = quiet
 
@@ -57,12 +58,20 @@ class Video_reencoder(ABC):
     def _speed(self):
         pass
 
-    
-    def reencode(self, input_file : str, output_file : str = None):
+    # Calls ffmpeg and returns if it could be finished
+    def reencode(self, input_file : str, output_file : str = None) -> bool:
         ffmpeg_call = self._set_reencode_call(input_file, output_file)
         if not self.quiet:
             print(f'ffmpeg call: {ffmpeg_call}')
-        subprocess.run(ffmpeg_call)
+        process = subprocess.Popen(ffmpeg_call, shell=True)
+        if self.timeout != None:
+            try:
+                process.wait(self.timeout)
+                return True
+            except:
+                return False
+        else:
+            return True
 
     @abstractmethod
     def _set_reencode_call(self, input_file : str, output_file : str = None):
