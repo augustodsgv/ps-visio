@@ -11,9 +11,10 @@ class Av1_reencoder(Video_reencoder):
         speed : str = None,         # realtime, good or best
         n_threads : int = None,
         t_duration : int = None,
-        quiet : bool = False
+        quiet : bool = False,
+        time_out : bool = False
         ):
-        super().__init__(bit_rate, variable_bitrate, crf_range, speed, n_threads, t_duration, quiet)
+        super().__init__(bit_rate, variable_bitrate, crf_range, speed, n_threads, t_duration, quiet, time_out)
 
     @property
     def crf(self):
