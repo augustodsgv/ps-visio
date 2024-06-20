@@ -1,6 +1,13 @@
 services:
   image-reencoder:
-    build: 
+    build: .
+    ports:
+    - "8080:8080"
+
+    environment:
+      - OUTPUT_MOUNT_PATH=/home/output_videos
+      - REENCODE_CODEC=VP9
+      - CRF_RANGE=75
+
     volumes:
-      - videos:source-videos
-      - reencoded-videos:output-videos
+      - ./container_output:/home/output_videos

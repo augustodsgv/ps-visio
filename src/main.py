@@ -1,37 +1,61 @@
-import src.vp8_reencoder as vp8
-import src.vp9_reencoder as vp9
-import src.av1_reencoder as av1
+from src.api.api_handler import Api_handler
+from src.downloader.bucket_downloader import Bucket_downloader
+from src.reencoder.av1_reencoder import Av1_reencoder
+from src.reencoder.vp8_reencoder import Vp8_reencoder
+from src.reencoder.vp9_reencoder import Vp9_reencoder
+from src.reencoder.video_reencoder import Video_reencoder
 import os
+from fastapi import FastAPI, Request
+from pydantic import BaseModel
+import uvicorn
 
-def main(): 
-    if 'INPUT_FILE_PATH' in os.environ:
-       input_file_path = os.environ['INPUT_FILE_PATH'] 
+app = FastAPI()
+output_mount_path = ''
+
+class reencode_request(BaseModel):
+    video_source : str
+
+@app.post('/reencode')
+def reencode_video(request : reencode_request):
+    reencoder = create_reencoder()
+    downloader = Bucket_downloader()
+    handler = Api_handler(reencoder=reencoder, downloader=downloader)
+    url = request.video_source
+    handler.accept_request(url, output_mount_path)
+    return {'Your video was recievied and will be reencoded soon'}
+
+def create_reencoder() -> Video_reencoder: 
+    if 'REENCODE_CODEC' in os.environ:
+       codec_dst = os.environ['REENCODE_CODEC'] 
     else:
-        input_file_path = "videos/h264_short.mp4"
+        raise Exception('No reencode codec provided!')
     
-    if 'OUTPUT_FILE_PATH' in os.environ:
-       output_file_name = os.environ['OUTPUT_FILE_PATH'] 
-    else:
-        output_file_name = None
+    codec_bitrate = None
+    codec_crf_range = None
+    codec_speed = None
 
-    # input_file_name = file_path.split('/')[-1]
-    
-    if 'CODEC_DST' in os.environ:
-       codec_dst = os.environ['CODEC_DST'] 
-    else:
-        raise Exception('No codec provided!')
+    if 'BIT_RATE' in os.environ:
+        codec_bitrate = os.environ['BIT_RATE']
+    if 'CRF_RANGE' in os.environ:
+        codec_crf_range = os.environ['CRF_RANGE']
+    if 'SPEED' in os.environ:
+        codec_speed = os.environ['SPEED']
 
+    reencoder = None
     if codec_dst == 'VP8':
-        reencoder = vp8.Vp8_reencoder(variable_bitrate=True)
+        reencoder = Vp8_reencoder(bit_rate=codec_bitrate, crf_range=int(codec_crf_range), speed=codec_speed)
     elif codec_dst == 'VP9':
-        reencoder = vp9.Vp9_reencoder(variable_bitrate=True)    
+        reencoder = Vp9_reencoder(bit_rate=codec_bitrate, crf_range=int(codec_crf_range), speed=codec_speed)    
     elif codec_dst == 'AV1':
-        reencoder = av1.Av1_reencoder(variable_bitrate=True)
+        reencoder = Av1_reencoder(bit_rate=codec_bitrate, crf_range=int(codec_crf_range), speed=codec_speed)
     else:
-        raise Exception(f'Codec /"{codec_dst}/" inválido!')
+        raise Exception(f'Invalid /"{codec_dst}/" Codec!')
     
-    reencoder.reencode(input_file_path, output_file_name)
-        
+    return reencoder
 
 if __name__ == '__main__':
-    main()
+    if 'OUTPUT_MOUNT_PATH' in os.environ:
+        output_mount_path = os.environ['OUTPUT_MOUNT_PATH']
+    else:
+        raise Exception('No output mount point indicated!')
+    uvicorn.run(app, host='0.0.0.0', port=8080)
