@@ -8,7 +8,9 @@ class PSNR_validator(Validator):
         pass
 
     def compare(self, original_video : str, reencoded_video : str) -> list[float, float, float, float]:
-        pipes = subprocess.Popen(           # Running CLI for PSNR in ffmpeg
+        call = f"ffmpeg -i {original_video} -i {reencoded_video} -hide_banner -filter_complex psnr -f null /dev/null"
+        print(call)
+        ffmpeg_process = subprocess.Popen(           # Running CLI for PSNR in ffmpeg
             [
                 "ffmpeg",
                 "-i", original_video,
@@ -19,8 +21,11 @@ class PSNR_validator(Validator):
             ],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE          # Redirecting the stdout and stderr to PIPE, because ffmpeg throws the output in stderr for some reason
             )
-        _, std_err = pipes.communicate()                            # Getting the stderr, in bytes
-    
+        _, std_err = ffmpeg_process.communicate()                            # Getting the stderr, in bytes
+        if ffmpeg_process.returncode != 0:
+            e_msg = 'Error calculating the PSNR score of the videos.\nFFMPEG message:\n\n' + std_err.decode('utf-8')
+            raise Exception(e_msg)
+        
         if len(std_err) > 0:
             output = std_err.decode('utf-8')          # Reencoding the stderr from bytes to uft-8
             # The output comes in an output like this:
